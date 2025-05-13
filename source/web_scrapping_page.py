@@ -19,17 +19,18 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
 # --- Configurações ---
-TABLE_NAME = 'st_precos_emporio_rosa'
+TABLE_NAME = 'st_precos_emporio_rosa' 
 INITIAL_URL_TEMPLATE = "https://www.emporiorosa.com.br/produtos-naturais-1.html?p={page}"
 PRODUCT_CONTAINER_SELECTOR = 'section.category-products'
 PRODUCT_ITEM_SELECTOR = "li.item"
+
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 PAGE_LOAD_DELAY = 3
 SCROLL_PAUSE_TIME = 1
 MAX_PAGES_TO_SCRAPE = 30
 NUM_THREADS = 8
 
-# --- Configuração do Banco de Dados PostgreSQL ---
+# --- Configuração do Banco de Dados Postgre ---
 db_host_env = os.getenv('DB_HOST_PROD')
 db_port_env = os.getenv('DB_PORT_PROD')
 db_name_env_explicit = os.getenv('DB_NAME_PROD')
@@ -70,7 +71,7 @@ metadata = MetaData()
 
 st_precos_emporio_rosa_table = Table(
     TABLE_NAME, metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True), 
+    Column('id', Integer, primary_key=True, autoincrement=True), # PK
     Column('nome', String(500), nullable=True),
     Column('categoria', String(100), nullable=True),
     Column('preco_de', Numeric(18, 2), nullable=True),
@@ -79,8 +80,8 @@ st_precos_emporio_rosa_table = Table(
     Column('medidas', String(100), nullable=True),
     Column('ranking_vendas', Integer, nullable=True),
     Column('id_produto', String(100), nullable=True),
-    Column('data_extracao', DateTime, nullable=True), # Ou TIMESTAMP(timezone=False)
-    schema=db_schema_env 
+    Column('data_extracao', DateTime, nullable=True), 
+    schema=db_schema_env # 
 )
 
 
@@ -93,8 +94,9 @@ def salvar_db_sqlalchemy(df, table_name_to_save, db_engine, schema_to_save='publ
         return 0
         
     try:
-        print(f"\n--- Iniciando salvamento de {len(df)} registros na tabela '{schema_to_save}.{table_name_to_save}' ---") 
+        print(f"\n--- Iniciando salvamento de {len(df)} registros na tabela '{schema_to_save}.{table_name_to_save}' ---")
         df.columns = [col.lower() for col in df.columns]
+
         df.to_sql(
             name=table_name_to_save, 
             con=db_engine,
@@ -204,12 +206,10 @@ def process_page(page_num, url_template, container_selector, item_selector, load
 if __name__ == "__main__":
     print(f"--- Iniciando script {TABLE_NAME} com {NUM_THREADS} Threads ---")
     script_start_time = time.time()
-
-    # Tentar criar a tabela se o engine foi configurado com sucesso
     if engine:
         try:
             print(f"Verificando/Criando tabela '{db_schema_env}.{TABLE_NAME}' no banco de dados...")
-            metadata.create_all(engine) 
+            metadata.create_all(engine)
             print(f"Tabela '{db_schema_env}.{TABLE_NAME}' pronta.")
         except Exception as e:
             print(f"Erro ao tentar criar/verificar a tabela '{db_schema_env}.{TABLE_NAME}': {e}")
@@ -257,7 +257,7 @@ if __name__ == "__main__":
         if page_result.get('products'):
             for product_data_item in page_result['products']:
                 product_data_item['ranking_vendas'] = current_global_rank
-                product_data_item['data_extracao'] = datetime.datetime.now()
+                product_data_item['data_extracao'] = datetime.datetime.now() # Adicionado aqui
                 all_products_data_list_of_dicts.append(product_data_item)
                 current_global_rank += 1
     
@@ -266,25 +266,29 @@ if __name__ == "__main__":
 
     if all_products_data_list_of_dicts:
         df_products = pd.DataFrame(all_products_data_list_of_dicts)
+        
         df_products.columns = [col.lower() for col in df_products.columns]
-        expected_cols = [col.name for col in st_precos_emporio_rosa_table.columns if col.name != 'id']
+
+        expected_cols = [col.name for col in st_precos_emporio_rosa_table.columns if col.name != 'id'] 
         for col_name in expected_cols:
             if col_name not in df_products.columns:
                 print(f"AVISO: Coluna '{col_name}' esperada na tabela não encontrada no DataFrame. Será inserida como NULL se permitido pela tabela.")
                 df_products[col_name] = None 
+
         df_products = df_products.reindex(columns=expected_cols)
 
 
         if engine:
             produtos_inseridos_total = salvar_db_sqlalchemy(
                 df_products, 
-                TABLE_NAME, 
+                TABLE_NAME, # já está em minúsculas
                 engine, 
                 schema_to_save=db_schema_env,
                 if_exists_policy='append'
             )
         else:
             print("Não foi possível salvar os dados no banco, pois o engine SQLAlchemy não está configurado.")
+
     else:
         print("Nenhum produto foi extraído para inserção.")
 
