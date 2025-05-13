@@ -1,0 +1,6 @@
+selenium
+requests
+beautifulsoup4
+pyodbc
+tqdm
+webdriver-manager
