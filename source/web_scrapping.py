@@ -19,7 +19,7 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 
 # --- Configurações ---
-TABLE_NAME = 'st_precos_emporio_rosa' # Nome da tabela em minúsculas (padrão PostgreSQL)
+TABLE_NAME = 'st_precos_emporio_rosa'
 INITIAL_URL_TEMPLATE = "https://www.emporiorosa.com.br/produtos-naturais-1.html?p={page}"
 PRODUCT_CONTAINER_SELECTOR = 'section.category-products'
 PRODUCT_ITEM_SELECTOR = "li.item"
