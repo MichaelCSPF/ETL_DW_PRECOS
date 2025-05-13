@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: db_price_yqq1
+    schema: public
+    tables:
+      - name: st_precos_emporio_rosa
+        description: Tabela contendo informações de preços, promoções e ranking de vendas dos produtos da loja Empório Rosa.
+        columns:
+          - name: id
+            description: Identificador único da linha ou registro.
+          - name: id_produto
+            description: Identificador do produto.
+          - name: nome
+            description: Nome do produto.
+          - name: categoria
+            description: Categoria à qual o produto pertence.
+          - name: preco_de
+            description: Preço original do produto, antes da promoção.
+          - name: preco_por
+            description: Preço atual do produto, possivelmente promocional.
+          - name: fl_promocao
+            description: Flag indicando se o produto está em promoção.
+          - name: ranking_vendas
+            description: Ranking de vendas do produto com base em volume ou receita.
+          - name: peso_grama_100g
+            description: Peso do produto normalizado para 100g.
+          - name: data_extracao
+            description: Data da extração dos dados para controle de versão.
